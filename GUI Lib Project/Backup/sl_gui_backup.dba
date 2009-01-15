@@ -1,0 +1,44 @@
+Type SL_GUIGADGET
+	name		as string	`name of gadget
+	parent	as string	`name of parent gadget
+	id			as integer	`id in other array that holds all its info
+	enabled	as boolean	`true or false
+	visible	as boolean	`true or false
+	gtype		as integer	`gadget type 0=window
+EndType
+
+Type SL_GUIWINDOW
+	spr_topleft		as integer 	`sprite id of top left corner
+	spr_topmid		as integer	`center piece of top border
+	spr_topright	as integer	`top right corner sprite
+	spr_rightmid	as integer	`center piece of right border
+	spr_lowright	as integer	`bottom right corner sprite
+	spr_lowmid		as integer	`center piece of bottom border
+	spr_lowleft		as integer	`bottom left corner sprite
+	x					as integer	`X screen position
+	y					as integer	`Y screen position
+	r					as integer	`red colour component
+	g					as integer	`green colour component
+	b					as integer	`blue colour component
+	alpha				as integer	`transparency of window
+	width				as integer	`width of window
+	height			as integer	`height of window
+	resizeable		as boolean	`true or false
+	moveable			as boolean	`true or false
+	minimizeable	as boolean	`true or false
+	maximizeable	as boolean	`true or false
+EndType
+
+Type SL_STYLE `style is a .slgui file containing all the images for diffent parts of the gui
+	
+EndType
+
+function SL_GUI_INIT()
+	dim SL_STYLE(0) as SL_STYLE
+	dim SL_GUIGADGET(0) as SL_GUIGADGET
+	dim SL_GUIWINDOW(0) as SL_GUIWINDOW
+endfunction
+
+function SL_MakeWindow(name$ as string,style as string,parent as string,x as integer,y as integer)
+	
+endfunction

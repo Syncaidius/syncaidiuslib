@@ -1,0 +1,10 @@
+`%ProjectTitle%
+`======================
+`©%Author%
+`======================
+`Main Source File
+set display mode 1024,768,32
+backdrop on : color backdrop 0
+autocam off
+sync on : sync rate 60
+
