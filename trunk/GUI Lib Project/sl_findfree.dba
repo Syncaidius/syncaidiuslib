@@ -1,0 +1,31 @@
+function SL_FindFreeFile()
+	for file = 1 to 500
+		if File Open(file)=0
+			ExitFunction file
+		endif
+	next file
+endfunction 0
+
+function SL_FindFreeImage(start as integer)
+	for img = start to 99999
+		if Image Exist(img)=0
+			ExitFunction img
+		endif
+	next img
+endfunction 0
+
+function SL_FindFreeObject(start as integer)
+	for obj = start to 99999
+		if Object Exist(obj)=0
+			ExitFunction obj
+		endif
+	next obj
+endfunction 0
+
+function SL_FindFreeMemblock()
+	for mem = 1 to 999
+		if Memblock Exist(mem)=0
+			ExitFunction mem
+		endif
+	next mem
+endfunction 0

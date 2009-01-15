@@ -6,5 +6,12 @@
 set display mode 1024,768,32
 backdrop on : color backdrop 0
 autocam off
-sync on : sync rate 60
+sync on : sync rate 60 
 
+SL_GUI_INIT()
+SL_Load_Style("test.sls")
+
+do
+
+	Sync
+loop
