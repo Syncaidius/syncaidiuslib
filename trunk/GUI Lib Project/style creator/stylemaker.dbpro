@@ -2,8 +2,54 @@ version=DBP1.00
 ;****DarkBASIC Professional Project****
 ;[Created by BLUE IDE - Version 2.0.22a]
 ;Basic project details
-project name=SL Style Maker
+project name=
 project comments=
 ;
 ;Files
 final source=_Temp.dbsource
+main=main.dba
+include1=gui.dba
+executable=SL Style Maker.exe
+build type=exe
+ 
+;Debug Mode YES/NO
+CLI=NO
+ 
+;====Media Settings====
+compression=
+encryption=
+media root path=D:\Work\Dark Basic\SynLib\GUI Lib Project\style creator\
+ 
+;====Included Media====
+ 
+;> Cursors
+ 
+;> Icons
+ 
+;====Other Settings====
+app title=
+graphics mode=
+fullscreen resolution=
+window resolution=
+compression=
+encryption=
+ 
+;====Version Information====
+vercomments=
+vercompany=
+vercopyright=
+verfiledesc=
+verfilename=
+verfilenumber=
+verinternal=
+verproduct=
+verproductnumber=
+vertrademark=
+ 
+;====Project Organization====
+ 
+;====Config/setup.ini values====
+RemoveSafetyCode=NO
+SafeArrays=YES
+LocalTempFolder=NO
+ExternaliseDLLS=NO

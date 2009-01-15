@@ -37,7 +37,9 @@ function createUI()
 	ControlPanel=createPanel(0,0,245,665,MainWin)
 	setPanelBorderStyle ControlPanel,2
 	
-	ImageTree=createTreeView(7,7,220,600,ControlPanel)
+	ImageTree=createListView(7,7,220,600,ControlPanel)
+	setListViewStyle ImageTree,LISTVIEW_REPORT
+	addListViewColumn ImageTree,"Test",100
 	Browse=createButton(157,623,75,25,"Browse...",0,ControlPanel)
 	Gadget4=createLabel(9,631,38,16,"Image:",ControlPanel)
 	setPanelBorderStyle Gadget4,2
@@ -52,8 +54,8 @@ function createUI()
 	addImageListItem TreeImages,"data\done.bmp"
 	addImageListItem TreeImages,"data\gadget.bmp"
 	
-	setTreeViewImageList ImageTree,TreeImages,0
-	setTreeViewImageList ImageTree,TreeImages,1
+	setListViewImageList ImageTree,TreeImages,0
+	setListViewImageList ImageTree,TreeImages,1
 endfunction
 
 `Create Main Menu
