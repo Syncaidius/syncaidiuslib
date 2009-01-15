@@ -1,87 +1,317 @@
 `array to hold all tree items/ style sections
 Type GUISection
-	name					as string
-	treeitem
+	name					as string	`name of section/gadget
+	description$		as string
+	complete				as boolean	`is this section completed
+	YPos					as integer	`Y position of section heading text
+	Draw					as boolean	`should draw child pieces or not
+	TotalPieces			as integer	`total number of pieces for this gadget/section
+	CompletedPieces	as integer	`total number of completed pieces.
 EndType
 Dim GUISection(0) 	as GUISection
 
 Type GUIPiece
 	section				as string	`name of gui section this piece is part of
-	name					as string	`name of gui piece
+	name					as string	`required image name (e.g. wtl.png for window top left).
+	description			as string	`description of section
 	file					as string	`image filename
-	treeitem	
+	defined				as boolean	`has an image been set to this piece
 EndType
 Dim GUIPiece(0) as GUIPiece
 
 `globals-----
-global savefile		as string
-global projectname	as string
+global filepath$		as string
+global curfile$		as string
+
+global textY			as integer
+global totalsections	as integer
+
+`menu globals
+global MainWin		
+global menu
+global filemenu
+global helpmenu
+global gadgetmenu
+global menumax			as integer
+global menulast		as integer	`last clicked gadget menu 
+global gadgetlast		as integer	`last GUISection ID that was set to draw
+#constant MENU_FILE 1
+#constant MENU_CHOOSEFOLDER 2
+#constant MENU_EXPORT 3
+#constant MENU_EXIT 5
+#constant MENU_HELP 6
+#constant MENU_GADGET 7
+
 
 `code---------
 set display mode 1024,768,32
 sync on : sync rate 0
 backdrop on : color backdrop 0
 Maximize Window
-startblue "MY","5120"
+StartBlue "MY","5120"
+D3D_Init
+D3D_FONT 1,"arial",8,1,0,8
+D3D_FONT 2,"arial",10,1,0,10
+D3D_FONT 3,"arial",9,0,0,9
 
-createUI()
-createMainMenu()
 Setup_Tree()
+Make_Menu()
 
+if File Exist("settings.txt")=1
+	Open to Read 1,"settings.txt"
+	Read String 1,filepath$
+	Close File 1
+endif
 do
-	getevent
-
+	getEvent
+	
+	`Check for menu clicks
+	Run_Menu()
+	`check through images
+	D3D_StartText
+	for section = 1 to array count(GUISection(0))
+		TextY = TextY + 20
+		GUISection(section).YPos = TextY
+		GUISection(section).complete = 1
+		GUISection(section).CompletedPieces = 0
+		GUISection(section).TotalPieces = 0
+		for piece = 1 to array count(GUIPiece(0))
+			if GUIPiece(piece).section = GUISection(section).name
+				GUISection(section).TotalPieces = GUISection(section).TotalPieces + 1
+				if File Exist(filepath$+"\"+GUIPiece(piece).name+".png")=1
+					if GUISection(section).Draw = 1
+						TextY = TextY + 20
+						D3d_Text 3,0,TextY,0,"     "+GUIPiece(piece).description+" ("+GUIPiece(piece).name+".png): DEFINED",d3d_rgba(0,255,0,255)
+					Endif
+					GUISection(section).CompletedPieces = GUISection(section).CompletedPieces + 1
+				else
+					if GUISection(section).Draw = 1
+						TextY = TextY + 20
+						D3D_Text 3,0,TextY,0,"     "+GUIPiece(piece).description+" ("+GUIPiece(piece).name+".png): MISSING",d3d_rgba(255,0,0,255)
+					Endif
+					GUISection(section).complete = 0
+				endif
+			endif
+		next piece
+		if GUISection(section).complete = 1
+			if GUISection(section).Draw = 1
+				D3d_Text 2,0,GUISection(section).YPos,0,"-("+str$(GUISection(section).CompletedPieces)+"/"+str$(GUISection(section).TotalPieces)+") "+GUISection(section).description$+": COMPLETE",d3d_rgba(0,255,0,255)
+			else
+				D3d_Text 1,0,GUISection(section).YPos,0,"+("+str$(GUISection(section).CompletedPieces)+"/"+str$(GUISection(section).TotalPieces)+") "+GUISection(section).description$+": COMPLETE",d3d_rgba(0,255,0,255)
+			endif
+		else
+			if GUISection(section).Draw = 1
+				D3D_Text 2,0,GUISection(section).YPos,0,"-("+str$(GUISection(section).CompletedPieces)+"/"+str$(GUISection(section).TotalPieces)+") "+GUISection(section).description$+": INCOMPLETE",d3d_rgba(255,0,0,255)
+			else
+				D3D_Text 1,0,GUISection(section).YPos,0,"+("+str$(GUISection(section).CompletedPieces)+"/"+str$(GUISection(section).TotalPieces)+") "+GUISection(section).description$+": INCOMPLETE",d3d_rgba(255,0,0,255)
+			endif
+		endif
+	next section
+	
+	d3d_Text 2,0,0,0,"Folder: "+filepath$+"\",d3d_rgba(0,255,255,255)
+	D3D_EndText
+	TextY = 0
 	sync
 loop
 
 function Setup_Tree()
-	AddGUISection("Window")
-		AddGUISectionPiece("Window","Top Left")
-		AddGUISectionPiece("Window","Top Middle")
-		AddGUISectionPiece("Window","Top Right")
-		AddGUISectionPiece("Window","Middle Right")
-		AddGUISectionPiece("Window","Bottom Right")
-		AddGUISectionPiece("Window","Bottom Middle")
-		AddGUISectionPiece("Window","Bottom left")
-		AddGUISectionPiece("Window","Middle Left")
-		AddGUISectionPiece("Window","Close Icon")
-		AddGUISectionPiece("Window","Maximize Icon")
-		AddGUISectionPiece("Window","Minimize Icon")
-		AddGUISectionPiece("Window","Resize Icon")
-	AddGUISection("Button")
-	AddGUISection("Check Box")
-	AddGUISection("Radio Button")
-	AddGUISection("Text Box")
-	AddGUISection("Menu")
-	AddGUISection("Tree View List")
-	AddGUISection("List View")
-	AddGUISection("Table")
+	AddGUISection("Missing Section","MISSING SECTION IMAGE")
+		AddGUISectionPiece("Missing Section","missing","Image that is shown when section is missing")
+	AddGUISection("Window","WINDOW GADGET")
+		AddGUISectionPiece("Window","wtl","Top Left Corner")
+		AddGUISectionPiece("Window","wtm","Top Middle")
+		AddGUISectionPiece("Window","wtr","Top Right Corner")
+		AddGUISectionPiece("Window","wmr","Middle Right")
+		AddGUISectionPiece("Window","wbr","Bottom Right Corner")
+		AddGUISectionPiece("Window","wbm","Bottom Middle")
+		AddGUISectionPiece("Window","wbl","Bottom Left Corner")
+		AddGUISectionPiece("Window","wml","Middle Left")
+		AddGUISectionPiece("Window","wci","Close Icon")
+		AddGUISectionPiece("Window","wmi","Maximize Icon")
+		AddGUISectionPiece("Window","wmmi","Minimize Icon")
+		AddGUISectionPiece("Window","wri","Resize Icon")
+	AddGUISection("Button","BUTTON GADGET")
+		AddGUISectionPiece("Button","bntl","Normal Top Left Corner")
+		AddGUISectionPiece("Button","bntm","Normal Top Middle")
+		AddGUISectionPiece("Button","bntr","Normal Top Right Corner")
+		AddGUISectionPiece("Button","bnmr","Normal Middle Right")
+		AddGUISectionPiece("Button","bnbr","Normal Bottom Right Corner")
+		AddGUISectionPiece("Button","bnbm","Normal Bottom Middle")
+		AddGUISectionPiece("Button","bnbl","Normal Bottom Left Corner")
+		AddGUISectionPiece("Button","bnml","Normal Middle Left")
+		AddGUISectionPiece("Button","botl","Mouse-Over Top Left Corner")
+		AddGUISectionPiece("Button","botm","Mouse-Over Top Middle")
+		AddGUISectionPiece("Button","botr","Mouse-Over Top Right Corner")
+		AddGUISectionPiece("Button","bomr","Mouse-Over Middle Right")
+		AddGUISectionPiece("Button","bobr","Mouse-Over Bottom Right Corner")
+		AddGUISectionPiece("Button","bobm","Mouse-Over Bottom Middle")
+		AddGUISectionPiece("Button","bobl","Mouse-Over Bottom Left Corner")
+		AddGUISectionPiece("Button","boml","Mouse-Over Middle Left")
+		AddGUISectionPiece("Button","bctl","Clicked Top Left Corner")
+		AddGUISectionPiece("Button","bctm","Clicked Top Middle")
+		AddGUISectionPiece("Button","bctr","Clicked Top Right Corner")
+		AddGUISectionPiece("Button","bcmr","Clicked Middle Right")
+		AddGUISectionPiece("Button","bcbr","Clicked Bottom Right Corner")
+		AddGUISectionPiece("Button","bcbm","Clicked Bottom Middle")
+		AddGUISectionPiece("Button","bcbl","Clicked Bottom Left Corner")
+		AddGUISectionPiece("Button","bcml","Clicked Middle Left")
+	AddGUISection("CheckBox","CHECKBOX GADGET")
+		AddGUISectionPiece("CheckBox","cbun","Normal Unchecked")
+		AddGUISectionPiece("CheckBox","cbum","Mouse-Over Unchecked")
+		AddGUISectionPiece("CheckBox","cbcn","Normal Checked")
+		AddGUISectionPiece("CheckBox","cbcm","Mouse-Over Checked")
+	AddGUISection("Radio","RADIO GADGET")
+		AddGUISectionPiece("Radio","run","Normal Unchecked")
+		AddGUISectionPiece("Radio","rum","Mouse-Over Unchecked")
+		AddGUISectionPiece("Radio","rcn","Normal Checked")
+		AddGUISectionPiece("Radio","rcm","Mouse-Over Checked")
+	AddGUISection("Text Box","TEXT BOX GADGET")
+		AddGUISectionPiece("Text Box","tbtl","Top Left Corner")
+		AddGUISectionPiece("Text Box","tbtm","Top Middle")
+		AddGUISectionPiece("Text Box","tbtr","Top Right Corner")
+		AddGUISectionPiece("Text Box","tbrm","Right Middle")
+		AddGUISectionPiece("Text Box","tbbr","Bottom Right Corner")
+		AddGUISectionPiece("Text Box","tbbm","Bottom Middle")
+		AddGUISectionPiece("Text Box","tbbl","Bottom left Corner")
+		AddGUISectionPiece("Text Box","tblm","Left Middle")
+	AddGUISection("Menu","MENU")
+		AddGUISectionPiece("Menu","mnml","Normal Main Item Left Side")
+		AddGUISectionPiece("Menu","mnmm","Normal Main Item Middle Section")
+		AddGUISectionPiece("Menu","mnmr","Normal Main Item Right Side")
+		AddGUISectionPiece("Menu","mnil","Normal Item Left Side")
+		AddGUISectionPiece("Menu","mnim","Normal Item Middle Section")
+		AddGUISectionPiece("Menu","mnir","Normal Item Right Side")
+		AddGUISectionPiece("Menu","mmml","Mouse-Over Main Item Left Side")
+		AddGUISectionPiece("Menu","mmmm","Mouse-Over Main Item Middle Section")
+		AddGUISectionPiece("Menu","mmmr","Mouse-Over Main Item Right Side")
+		AddGUISectionPiece("Menu","mmil","Mouse-Over Item Left Side")
+		AddGUISectionPiece("Menu","mmim","Mouse-Over Item Middle Section")
+		AddGUISectionPiece("Menu","mmir","Mouse-Over Item Right Side")
+	AddGUISection("Tree View","TREE VIEW GADGET")
+		AddGUISectionPiece("Tree View","tveti","Expand Tree Icon")
+		AddGUISectionPiece("Tree View","tvcti","Compress Tree Icon")
+		AddGUISectionPiece("Tree View","tvhb","Horizontal Branch Line")
+		AddGUISectionPiece("Tree View","tvvb","Vertical Branch Line")
+		AddGUISectionPiece("Tree View","tvtl","Border Top Left Corner")
+		AddGUISectionPiece("Tree View","tvtm","Border Top Middle")
+		AddGUISectionPiece("Tree View","tvtr","Border Top Right Corner")
+		AddGUISectionPiece("Tree View","tvrm","Border Right Middle")
+		AddGUISectionPiece("Tree View","tvbr","Border Bottom Right Corner")
+		AddGUISectionPiece("Tree View","tvbm","Border Bottom Middle")
+		AddGUISectionPiece("Tree View","tvbl","Border Bottom Left Corner")
+		AddGUISectionPiece("Tree View","tvlm","Border Left Middle")
+	AddGUISection("List View","LIST VIEW GADGET")
+		AddGUISectionPiece("List View","lvtl","Border Top Left Corner")
+		AddGUISectionPiece("List View","lvtm","Border Top Middle")
+		AddGUISectionPiece("List View","lvtr","Border Top Right Corner")
+		AddGUISectionPiece("List View","lvrm","Border Right Middle")
+		AddGUISectionPiece("List View","lvbr","Border Bottom Right Corner")
+		AddGUISectionPiece("List View","lvbm","Border Bottom Middle")
+		AddGUISectionPiece("List View","lvbl","Border Bottom Left Corner")
+		AddGUISectionPiece("List View","lvlm","Border Left Middle")
+	AddGUISection("Table","TABLE GADGET")
+	AddGUISection("Progress Bar","PROGRESS BAR")
+	AddGUISection("Scroll Bar","SCROLL BAR")
+	AddGUISection("Spin Gadget","SPIN GADGET")
+	AddGUISection("Track Bar","TRACK BAR GADGET")
+	AddGUISection("Tab Gadget","TAB GADGET")
+	AddGUISection("Frame","FRAME GADGET")
+	AddGUISection("Dial/Knob","DIAL/KNOB GADGET")
+	AddGUISection("Gauge","GAUGE GADGET")
 endfunction
 
-function AddGUISection(name as string)
+function AddGUISection(name as string,desc$ as string)
 	array insert at bottom GUISection(0)
-	local id as integer = array count(GUISection(0))
+	id = array count(GUISection(0))
 	
 	GUISection(id).name = name
-	GUISection(id).treeitem = addTreeViewItem(ImageTree,0,-1,GUISection(id).name)
+	GUISection(id).description$ = desc$
+	addListViewItem ImageTree,GUISection(id).name,0
+	totalsections = totalsections + 1
 endfunction
 
-function AddGUISectionPiece(section as string, name as string)
+function AddGUISectionPiece(section as string, name as string, desc as string)
 	array insert at bottom GUIPiece(0)
-	local id as integer = array count(GUIPiece(0))
-	local secid as integer = GetSectionID(section)
+	id = array count(GUIPiece(0))
 	
 	GUIPiece(id).section = section
 	GUIPiece(id).name = name
-	GUIPiece(id).treeitem = addTreeViewItem(ImageTree,GUISection(secid).treeitem,2,GUIPiece(id).name)
+	GUIPiece(id).description = desc
 endfunction
 
-function GetSectionID(name as string)
-	local section as integer
+function Make_Menu()
+	MainWin = CreateGadgetFromWindow(MainWindow())
+	SetGadgetText MainWin,"SL Style Maker"
 	
-	for id = 1 to array count(GUISection(0))
-		if name = GUISection(id).name
-			Exitfunction id
+	menu = CreateMenu(MainWin)
+	addMenuItem menu,"File",MENU_FILE
+		filemenu = CreateSubMenu(menu,MENU_FILE)
+		addMenuitem filemenu,"Choose Folder",MENU_CHOOSEFOLDER
+		addMenuitem filemenu,"Export",MENU_EXPORT
+		addMenuSplitter filemenu
+		addMenuItem filemenu,"Exit",MENU_EXIT
+	addMenuItem menu,"Gadget",MENU_GADGET
+		gadgetmenu = CreateSubMenu(menu,MENU_GADGET)
+		for menuitem = 1 to Array Count(GUISection(0))
+			addMenuItem gadgetmenu,GUISection(menuitem).description$,100+menuitem
+			menumax = menumax + 1
+		next menuitem
+	addMenuItem menu,"Help",MENU_EDIT
+		helpmenu = CreateSubMenu(menu,MENU_HELP)
+endfunction
+
+function Run_Menu()
+	if EventType() = MENU_CLICK
+		menuclicked = EventData()
+		
+		for getgadget = 1 to array count(GUISection(0))
+			if getMenuItemText(gadgetmenu,menuclicked) = GUISection(getgadget).description$
+				setMenuItemChecked gadgetmenu,menulast,0
+				setMenuItemChecked gadgetmenu,menuclicked,1
+				GUISection(getgadget).draw = 1
+				GUISection(gadgetlast).draw = 0
+				menulast = menuclicked
+				gadgetlast = getgadget
+			endif
+		next getgadget
+		
+		if menuclicked = MENU_CHOOSEFOLDER `select file path
+			filepath$ = folderDialog()
+			if File Exist("settings.txt")=1
+				Delete File "settings.txt"
+			endif
+			Open to Write 1,"settings.txt"
+			Write String 1,filepath$
+			Close File 1
 		endif
-	next id
-endfunction 0
+		if menuclicked = MENU_EXPORT
+			ExportStyle()
+		endif
+	endif
+endfunction
+
+function ExportStyle()
+	filename$ = SaveDialog("Export SL Style","SL Styles (*.sls)|*.sls")
+	if File Exist(filename$)=1 then Delete File filename$
+	
+	Open to Write 1,filename$
+		for write = 1 to array count(GUISection(0))
+			Write long 1,totalsections	`total number of sections to be stored
+			Write string 1,GUISection(write).name	`name of section/gadget
+			Write long 1,GUISection(write).TotalPieces `total pieces that the section has.
+			for writepiece = 1 to array count(GUIPiece(0))
+				if GUIPiece(writepiece).section = GUISection(write).name
+					if File Exist(filepath$+"\"+GUIPiece(writepiece).name+".png")=1
+						Write string 1,GUIPiece(writepiece).name	`write the image filename of the piece
+						Load Image filepath$+"\"+GUIPiece(writepiece).name+".png",1,1
+						make Memblock from image 1,1
+						Write Memblock 1,1
+						delete memblock 1 : delete image 1
+					else
+						Write string 1,"NA" `program will read this and skip loading a memblock from this file.
+					endif
+				endif
+			next writepiece
+		next write
+	close file 1
+endfunction
