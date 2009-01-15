@@ -1,0 +1,22 @@
+;Rainbow GUI Layout File
+;version 1.05
+panel name="ControlPanel" x="0" y="0" width="245" height="665" parent="" text="" enabled="1" visible="1" align="0" border="2"
+treeview name="ImageTree" x="7" y="7" width="220" height="600" parent="ControlPanel" text="" enabled="1" visible="1" align="0"
+button name="Browse" x="157" y="623" width="75" height="25" parent="ControlPanel" text="Browse..." enabled="1" visible="1" align="0"
+label name="Gadget4" x="9" y="631" width="38" height="16" parent="ControlPanel" text="Image:" enabled="1" visible="1" align="0" border="2"
+edit name="ImageText" x="52" y="627" width="95" height="20" parent="ControlPanel" text="" enabled="1" visible="1" align="0"
+statusbar name="StatBar" x="0" y="639" width="645" height="23" parent="" text="" enabled="1" visible="1" align="0"
+menu
+-File
+--New Style...
+--Open Style...
+--[Splitter]
+--Save Style
+--Save Style As...
+--[Splitter]
+--Export Style
+--[Splitter]
+--Exit
+-Help
+--About
+endmenu

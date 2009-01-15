@@ -1,0 +1,87 @@
+`array to hold all tree items/ style sections
+Type GUISection
+	name					as string
+	treeitem
+EndType
+Dim GUISection(0) 	as GUISection
+
+Type GUIPiece
+	section				as string	`name of gui section this piece is part of
+	name					as string	`name of gui piece
+	file					as string	`image filename
+	treeitem	
+EndType
+Dim GUIPiece(0) as GUIPiece
+
+`globals-----
+global savefile		as string
+global projectname	as string
+
+`code---------
+set display mode 1024,768,32
+sync on : sync rate 0
+backdrop on : color backdrop 0
+Maximize Window
+startblue "MY","5120"
+
+createUI()
+createMainMenu()
+Setup_Tree()
+
+do
+	getevent
+
+	sync
+loop
+
+function Setup_Tree()
+	AddGUISection("Window")
+		AddGUISectionPiece("Window","Top Left")
+		AddGUISectionPiece("Window","Top Middle")
+		AddGUISectionPiece("Window","Top Right")
+		AddGUISectionPiece("Window","Middle Right")
+		AddGUISectionPiece("Window","Bottom Right")
+		AddGUISectionPiece("Window","Bottom Middle")
+		AddGUISectionPiece("Window","Bottom left")
+		AddGUISectionPiece("Window","Middle Left")
+		AddGUISectionPiece("Window","Close Icon")
+		AddGUISectionPiece("Window","Maximize Icon")
+		AddGUISectionPiece("Window","Minimize Icon")
+		AddGUISectionPiece("Window","Resize Icon")
+	AddGUISection("Button")
+	AddGUISection("Check Box")
+	AddGUISection("Radio Button")
+	AddGUISection("Text Box")
+	AddGUISection("Menu")
+	AddGUISection("Tree View List")
+	AddGUISection("List View")
+	AddGUISection("Table")
+endfunction
+
+function AddGUISection(name as string)
+	array insert at bottom GUISection(0)
+	local id as integer = array count(GUISection(0))
+	
+	GUISection(id).name = name
+	GUISection(id).treeitem = addTreeViewItem(ImageTree,0,-1,GUISection(id).name)
+endfunction
+
+function AddGUISectionPiece(section as string, name as string)
+	array insert at bottom GUIPiece(0)
+	local id as integer = array count(GUIPiece(0))
+	local secid as integer = GetSectionID(section)
+	
+	GUIPiece(id).section = section
+	GUIPiece(id).name = name
+	GUIPiece(id).treeitem = addTreeViewItem(ImageTree,GUISection(secid).treeitem,2,GUIPiece(id).name)
+endfunction
+
+function GetSectionID(name as string)
+	local section as integer
+	
+	for id = 1 to array count(GUISection(0))
+		if name = GUISection(id).name
+			Exitfunction id
+		endif
+	next id
+endfunction 0
