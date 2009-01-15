@@ -1,3 +1,9 @@
+remstart
+	REQUIRES:
+		- SL FIND FREE LIBRARY
+remend
+
+
 Type SL_GUIGADGET
 	name		as string	`name of gadget
 	parent	as string	`name of parent gadget
@@ -15,6 +21,11 @@ Type SL_GUIWINDOW
 	spr_lowright	as integer	`bottom right corner sprite
 	spr_lowmid		as integer	`center piece of bottom border
 	spr_lowleft		as integer	`bottom left corner sprite
+	spr_leftmid		as integer	`center piece of left border
+	spr_resize		as integer	`resize icon
+	spr_close		as integer	`close icon
+	spr_minimize	as integer	`minimize icon
+	spr_maximize	as integer	`maximize icon
 	x					as integer	`X screen position
 	y					as integer	`Y screen position
 	r					as integer	`red colour component
@@ -27,16 +38,58 @@ Type SL_GUIWINDOW
 	moveable			as boolean	`true or false
 	minimizeable	as boolean	`true or false
 	maximizeable	as boolean	`true or false
+	label				as integer	`label array id.
+	master			as boolean 	`if master=1 then this is storing all the images required for creating windows.
 EndType
 
-Type SL_STYLE `style is a .slgui file containing all the images for diffent parts of the gui
-	
+Type SL_MISSING
+	img				as integer	`image used to replace missing images
+EndType
+
+Type SL_STYLEINFO
+	section$			as string
+	name$				as string
+	img				as integer
 EndType
 
 function SL_GUI_INIT()
-	dim SL_STYLE(0) as SL_STYLE
+	dim SL_STYLEINFO(0) as SL_STYLEINFO
 	dim SL_GUIGADGET(0) as SL_GUIGADGET
 	dim SL_GUIWINDOW(0) as SL_GUIWINDOW
+	dim SL_MISSING(0) as SL_MISSING
+endfunction
+
+function SL_Load_Style(filename$ as string)
+	totalsections = 0
+	sectionname$ = ""
+	totalpieces = 0
+	file = SL_FindFreeFile()
+	memblock = SL_FindFreeMemblock()
+	
+	Open to Read file,filename$
+	Read Long file,totalsections
+	
+	for section = 1 to totalsections
+		read string file,sectionname$
+		read long file,totalpieces
+		
+		for piece = 1 to totalpieces
+			array insert at bottom SL_STYLEINFO(0)
+			id = array count(SL_STYLEINFO(0))
+			
+			Read string file,SL_STYLEINFO(id).name$
+			if SL_STYLEINFO(id).name$ = "NA"
+				Array Delete Element SL_STYLEINFO(0),id
+			else
+				SL_STYLEINFO(id).section$ = sectionname$
+				read memblock file,memblock
+				img = SL_FindFreeImage(1)
+				make image from memblock img,memblock
+				delete memblock memblock
+				SL_STYLEINFO(id).img = img
+			endif
+		next piece
+	next section
 endfunction
 
 function SL_MakeWindow(name$ as string,style as string,parent as string,x as integer,y as integer)

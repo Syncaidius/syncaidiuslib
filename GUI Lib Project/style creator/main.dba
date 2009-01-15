@@ -295,8 +295,8 @@ function ExportStyle()
 	if File Exist(filename$)=1 then Delete File filename$
 	
 	Open to Write 1,filename$
+		Write long 1,totalsections	`total number of sections to be stored
 		for write = 1 to array count(GUISection(0))
-			Write long 1,totalsections	`total number of sections to be stored
 			Write string 1,GUISection(write).name	`name of section/gadget
 			Write long 1,GUISection(write).TotalPieces `total pieces that the section has.
 			for writepiece = 1 to array count(GUIPiece(0))

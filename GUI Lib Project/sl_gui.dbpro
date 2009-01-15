@@ -9,6 +9,7 @@ project comments=
 final source=_Temp.dbsource
 main=main.dba
 include1=sl_gui.dba
+include2=sl_findfree.dba
 executable=temp.exe
 build type=exe
  
@@ -49,7 +50,7 @@ vertrademark=
 ;====Project Organization====
  
 ;====Config/setup.ini values====
-RemoveSafetyCode=
-SafeArrays=
-LocalTempFolder=
-ExternaliseDLLS=
+RemoveSafetyCode=NO
+SafeArrays=YES
+LocalTempFolder=NO
+ExternaliseDLLS=NO
