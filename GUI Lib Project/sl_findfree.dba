@@ -29,3 +29,11 @@ function SL_FindFreeMemblock()
 		endif
 	next mem
 endfunction 0
+
+function SL_FindFreeSprite(start as integer)
+	for spr = start to 99999
+		if sprite exist(spr)=0
+			ExitFunction spr
+		endif
+	next spr
+endfunction 0

@@ -6,12 +6,17 @@
 set display mode 1024,768,32
 backdrop on : color backdrop 0
 autocam off
-sync on : sync rate 60 
+sync on : sync rate 0 
+maximize window
 
 SL_GUI_INIT()
 SL_Load_Style("test.sls")
 
+SL_MakeWindow("Test","Main","This is a test window",100,100,300,100)
 do
-
+	SL_GUIRUN()
+	
+	text 0,0,"FPS: "+STR$(SCREEN FPS())
+	text 0,20,"Mouse: "+STR$(Mousex())+","+STR$(MouseY())
 	Sync
 loop
