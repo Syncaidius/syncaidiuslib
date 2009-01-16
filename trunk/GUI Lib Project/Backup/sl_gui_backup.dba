@@ -5,12 +5,12 @@ remend
 
 
 Type SL_GUIGADGET
-	name		as string	`name of gadget
-	parent	as string	`name of parent gadget
+	name$		as string	`name of gadget
+	parent$	as string	`name of parent gadget
 	id			as integer	`id in other array that holds all its info
 	enabled	as boolean	`true or false
 	visible	as boolean	`true or false
-	gtype		as integer	`gadget type 0=window
+	gtype		as integer	`gadget type 1=window
 EndType
 
 Type SL_GUIWINDOW
@@ -39,11 +39,6 @@ Type SL_GUIWINDOW
 	minimizeable	as boolean	`true or false
 	maximizeable	as boolean	`true or false
 	label				as integer	`label array id.
-	master			as boolean 	`if master=1 then this is storing all the images required for creating windows.
-EndType
-
-Type SL_MISSING
-	img				as integer	`image used to replace missing images
 EndType
 
 Type SL_STYLEINFO
@@ -52,11 +47,26 @@ Type SL_STYLEINFO
 	img				as integer
 EndType
 
+Type SL_GUIBMPFONT
+	img				as integer
+EndType
+
+Type SL_GUILABEL
+	txtstart			as integer	`start position in bmpchar array
+	txtend			as integer	`end position in bmp char array
+EndType
+
+Type SL_GUIBMPCHAR
+	spr				as integer	`sprite id
+EndType
+
 function SL_GUI_INIT()
 	dim SL_STYLEINFO(0) as SL_STYLEINFO
 	dim SL_GUIGADGET(0) as SL_GUIGADGET
 	dim SL_GUIWINDOW(0) as SL_GUIWINDOW
-	dim SL_MISSING(0) as SL_MISSING
+	dim SL_GUILABEL(0) as SL_GUILABEL
+	dim SL_GUIBMPCHAR(0) as SL_GUIBMPCHAR
+	dim SL_GUIBMPFONT(255) as SL_GUIBMPFONT `array ids corrispond to ascii codes.
 endfunction
 
 function SL_Load_Style(filename$ as string)
@@ -90,8 +100,84 @@ function SL_Load_Style(filename$ as string)
 			endif
 		next piece
 	next section
+	
+	`Assign Window images
+	array insert at bottom SL_GUIWINDOW(0)
+	SL_GUIWINDOW(1).spr_topleft = SL_GetStyleImage("wtl")
+	SL_GUIWINDOW(1).spr_topmid = SL_GetStyleImage("wtm")
+	SL_GUIWINDOW(1).spr_topright = SL_GetStyleImage("wtr")
+	SL_GUIWINDOW(1).spr_rightmid = SL_GetStyleImage("wmr")
 endfunction
 
-function SL_MakeWindow(name$ as string,style as string,parent as string,x as integer,y as integer)
+function SL_GetStyleImage(name$ as string)
+	for get = 1 to array count(SL_STYLEINFO(0))
+		if SL_STYLEINFO(get).name$ = name$
+			img = SL_STYLEINFO(get).img
+			exitfunction img
+		endif
+	next get
+	img = SL_STYLEINFO(1).img
+endfunction img
+
+function SL_LoadBMPFont(filename$)
+	`TODO: LOAD BMP FONT FILES (.slbf)
+endfunction
+
+function SL_MakeLabel(caption$ as string)
+	`TODO: convert string into ascii chars, create sprites and store in GUIBMPCHAR array.
+	`get their image IDs from the GUIBMPFONT array.
 	
+	`return array id of label that was just created.
+endfunction 0
+
+function SL_MakeWindow(name$ as string,parent$ as string,label$ as string,x as integer,y as integer,width as integer,height as integer)
+	array insert at bottom SL_GUIWINDOW(0)
+	id = array count(SL_GUIWINDOW(0))
+	
+	array insert at bottom SL_GUIGADGET(0)
+	gad = array count(SL_GUIGADGET(0))
+	
+	SL_GUIGADGET(gad).name$ = name$
+	SL_GUIGADGET(gad).parent$ = parent$
+	SL_GUIGADGET(gad).id = id
+	SL_GUIGADGET(gad).enabled = 1
+	SL_GUIGADGET(gad).visible = 1
+	SL_GUIGADGET(gad).gtype = 1
+	
+	SL_GUIWINDOW(id).x = x
+	SL_GUIWINDOW(id).y = y
+	SL_GUIWINDOW(id).width = width
+	SL_GUIWINDOW(id).height = height
+	SL_GUIWINDOW(id).r = 255
+	SL_GUIWINDOW(id).g = 255
+	SL_GUIWINDOW(id).b = 255
+	SL_GUIWINDOW(id).alpha = 255
+	SL_GUIWINDOW(id).resizeable = 1
+	SL_GUIWINDOW(id).moveable = 1
+	SL_GUIWINDOW(id).maximizeable = 1
+	SL_GUIWINDOW(id).minimizeable = 1
+	SL_GUIWINDOW(id).label = SL_MakeLabel(label$)
+	
+	`create and position window
+	SL_GUIWINDOW(id).spr_topleft = SL_FindFreeSprite(1)
+	sprite SL_GUIWINDOW(id).spr_topleft,x,y,SL_GUIWINDOW(1).spr_topleft
+	
+	SL_GUIWINDOW(id).spr_topmid = SL_FindFreeSprite(1)
+	x = SL_GUIWINDOW(id).x + image width(SL_GUIWINDOW(1).spr_topleft)
+	sprite SL_GUIWINDOW(id).spr_topmid,x,y,SL_GUIWINDOW(1).spr_topmid
+	xsize = width - image width(SL_GUIWINDOW(1).spr_topleft) - image width(SL_GUIWINDOW(1).spr_topright)
+	size sprite SL_GUIWINDOW(id).spr_topmid,xsize,sprite height(SL_GUIWINDOW(id).spr_topmid)
+	
+	SL_GUIWINDOW(id).spr_topright = SL_FindFreeSprite(1)
+	x = SL_GUIWINDOW(id).x + width - sprite width(SL_GUIWINDOW(id).spr_topleft)
+	sprite SL_GUIWINDOW(id).spr_topright,x,y,SL_GUIWINDOW(1).spr_topright
+endfunction
+
+
+
+`=======================GUI RUNNING CODE========================================
+function SL_GUIRUN()
+	for run = 1 to array count(SL_GUIGADGET(0))
+	
+	next run
 endfunction
