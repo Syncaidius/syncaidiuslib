@@ -108,7 +108,7 @@ function SL_Load_Style(filename$ as string)
 	SL_GUIWINDOW(1).spr_topright = SL_GetStyleImage("wtr")
 	SL_GUIWINDOW(1).spr_rightmid = SL_GetStyleImage("wmr")
 	SL_GUIWINDOW(1).spr_lowright = SL_GetStyleImage("wbr")
-	SL_GUIWINDOW(1).spr_lowmid = SL_GetStyleImage("wmr")
+	SL_GUIWINDOW(1).spr_lowmid = SL_GetStyleImage("wbm")
 	SL_GUIWINDOW(1).spr_lowleft = SL_GetStyleImage("wbl")
 	SL_GUIWINDOW(1).spr_leftmid = SL_GetStyleImage("wml")
 endfunction
@@ -186,6 +186,13 @@ function SL_MakeWindow(name$ as string,parent$ as string,label$ as string,x as i
 	SL_GUIWINDOW(id).spr_lowright = SL_FindFreeSprite(1)
 	y = SL_GUIWINDOW(id).y + height - image height(SL_GUIWINDOW(1).spr_topright)
 	sprite SL_GUIWINDOW(id).spr_lowright,x,y,SL_GUIWINDOW(1).spr_lowright
+	
+	SL_GUIWINDOW(id).spr_lowmid = SL_FindFreeSprite(1)
+	x = SL_GUIWINDOW(id).x + image width(SL_GUIWINDOW(1).spr_lowleft)
+	xsize = width - image width(SL_GUIWINDOW(1).spr_lowleft) - image width(SL_GUIWINDOW(1).spr_lowright)
+	ysize = image height(SL_GUIWINDOW(1).spr_lowmid)
+	sprite SL_GUIWINDOW(id).spr_lowmid,x,y,SL_GUIWINDOW(1).spr_lowmid
+	size sprite SL_GUIWINDOW(id).spr_lowmid,xsize,ysize
 endfunction
 
 

@@ -13,6 +13,7 @@ SL_GUI_INIT()
 SL_Load_Style("test.sls")
 
 SL_MakeWindow("Test","Main","This is a test window",100,100,300,100)
+
 do
 	SL_GUIRUN()
 	
