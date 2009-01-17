@@ -26,6 +26,9 @@ Type SL_GUIWINDOW
 	spr_close		as integer	`close icon
 	spr_minimize	as integer	`minimize icon
 	spr_maximize	as integer	`maximize icon
+	spr_titleleft	as integer	`caption/title bar left section
+	spr_titleright	as integer	`caption/title bar right section
+	spr_titlemid	as integer	`caption/title bar mid section
 	x					as integer	`X screen position
 	y					as integer	`Y screen position
 	r					as integer	`red colour component
@@ -111,6 +114,9 @@ function SL_Load_Style(filename$ as string)
 	SL_GUIWINDOW(1).spr_lowmid = SL_GetStyleImage("wbm")
 	SL_GUIWINDOW(1).spr_lowleft = SL_GetStyleImage("wbl")
 	SL_GUIWINDOW(1).spr_leftmid = SL_GetStyleImage("wml")
+	SL_GUIWINDOW(1).spr_titleleft = SL_GetStyleImage("wtbl")
+	SL_GUIWINDOW(1).spr_titleright = SL_GetStyleImage("wtbr")
+	SL_GUIWINDOW(1).spr_titlemid = SL_GetStyleImage("wtbm")
 endfunction
 
 function SL_GetStyleImage(name$ as string)
@@ -193,6 +199,20 @@ function SL_MakeWindow(name$ as string,parent$ as string,label$ as string,x as i
 	ysize = image height(SL_GUIWINDOW(1).spr_lowmid)
 	sprite SL_GUIWINDOW(id).spr_lowmid,x,y,SL_GUIWINDOW(1).spr_lowmid
 	size sprite SL_GUIWINDOW(id).spr_lowmid,xsize,ysize
+	
+	SL_GUIWINDOW(id).spr_lowleft = SL_FindFreeSprite(1)
+	x = SL_GUIWINDOW(id).x
+	y = SL_GUIWINDOW(id).y + height - image height(SL_GUIWINDOW(1).spr_topleft)
+	sprite SL_GUIWINDOW(id).spr_lowleft,x,y,SL_GUIWINDOW(1).spr_lowleft
+	
+	SL_GUIWINDOW(id).spr_leftmid = SL_FindFreeSprite(1)
+	y = SL_GUIWINDOW(id).y + image height(SL_GUIWINDOW(1).spr_topleft)
+	sprite SL_GUIWINDOW(id).spr_leftmid,x,y,SL_GUIWINDOW(1).spr_leftmid
+	xsize = sprite width(SL_GUIWINDOW(id).spr_leftmid)
+	ysize = height - image height(SL_GUIWINDOW(1).spr_topleft) - image height(SL_GUIWINDOW(1).spr_lowleft)
+	size sprite SL_GUIWINDOW(id).spr_leftmid,xsize,ysize
+	
+	`TODO: Add title bar to window and caption/label. Make title bar resize with title text length.
 endfunction
 
 

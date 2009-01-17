@@ -12,7 +12,11 @@ maximize window
 SL_GUI_INIT()
 SL_Load_Style("test.sls")
 
-SL_MakeWindow("Test","Main","This is a test window",100,100,300,100)
+SL_MakeWindow("Test","Main","This is a test window",100,100,300,400)
+SL_MakeWindow("Test2","Main","This is a test window2",200,100,300,100)
+SL_MakeWindow("Test","Main","This is a test window",400,100,300,100)
+SL_MakeWindow("Test","Main","This is a test window",500,100,700,200)
+SL_MakeWindow("Test","Main","This is a test window",600,100,100,500)
 
 do
 	SL_GUIRUN()
