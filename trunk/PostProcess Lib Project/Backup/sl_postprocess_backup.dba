@@ -1,0 +1,9 @@
+`post process libray for SynLib
+`Type Bloom
+
+`EndType
+
+
+function SL_INIT_POSTPROCESS()
+
+endfunction

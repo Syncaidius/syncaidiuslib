@@ -1,0 +1,27 @@
+`%ProjectTitle%
+`======================
+`©%Author%
+`======================
+`Main Source File
+set display mode 1024,768,32
+maximize window
+sync on : sync rate 60
+backdrop on : color backdrop rgb(0,100,0)
+autocam off
+
+`full screen camera
+make camera 1
+color backdrop 1,rgb(0,100,0)
+load camera effect "cell.fx",1,0
+set camera effect 1,1
+
+Make object cube 1,10
+color object 1,rgb(255,0,0)
+
+position camera 0,0,0,0
+position object 1,0,0,25
+
+do
+	turn object left 1,1
+	sync
+loop
