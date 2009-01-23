@@ -3,10 +3,12 @@ remstart
 		- SL FIND FREE LIBRARY
 remend
 
+`SynLib GUI constants. Assigns numbers to gadget types
+#CONSTANT SL_GUI_WINDOW 1
 
 Type SL_GUIGADGET
 	name$		as string	`name of gadget
-	parent$	as string	`name of parent gadget
+	parent	as string	`id of parent in respective array
 	id			as integer	`id in other array that holds all its info
 	enabled	as boolean	`true or false
 	visible	as boolean	`true or false
@@ -57,6 +59,7 @@ EndType
 Type SL_GUILABEL
 	txtstart			as integer	`start position in bmpchar array
 	txtend			as integer	`end position in bmp char array
+	size				as integer	`font size
 EndType
 
 Type SL_GUIBMPCHAR
@@ -130,15 +133,46 @@ function SL_GetStyleImage(name$ as string)
 endfunction img
 
 function SL_LoadBMPFont(filename$)
-	`TODO: LOAD BMP FONT FILES (.slbf)
+	file = SL_FindFreeFile()
+	memblock = SL_FindFreeMemblock()
+	ascii = 0
+	
+	open to read file,filename$
+		for char = 1 to 255
+			read long file,ascii
+			if ascii>0
+				SL_GUIBMPFONT(char).img = SL_FindFreeImage(1)
+				read memblock file,memblock
+				make image from memblock SL_GUIBMPFONT(char).img,memblock
+				delete memblock memblock
+			endif
+		next char
+	close file file
 endfunction
 
-function SL_MakeLabel(caption$ as string)
-	`TODO: convert string into ascii chars, create sprites and store in GUIBMPCHAR array.
-	`get their image IDs from the GUIBMPFONT array.
+function SL_MakeLabel(caption$ as string,x as integer,y as integer,size as integer)
+	array insert at bottom SL_GUILABEL(0)
+	id = array count(SL_GUILABEL(0))
+	length = len(caption$)
 	
-	`return array id of label that was just created.
-endfunction 0
+	array insert at bottom SL_GUIBMPCHAR(0)
+	char = array count(SL_GUIBMPCHAR(0))
+	SL_GUILABEL(id).txtstart = char
+	SL_GUILABEL(id).txtend = id + len(caption$)
+	
+	for write = 1 to length
+		array insert at bottom SL_GUIBMPCHAR(0)
+		char = array count(SL_GUIBMPCHAR(0))
+		ascii = asc(mid$(caption$,write))
+		img = SL_GUIBMPFONT(ascii).img
+		
+		SL_GUIBMPCHAR(char).spr = SL_FindFreeSprite(1)
+		if img>0
+			sprite SL_GUIBMPCHAR(char).spr,x+((size-(size/4))*(write-1)),y,img
+			size sprite SL_GUIBMPCHAR(char).spr,size,size
+		endif
+	next write
+endfunction id
 
 function SL_MakeWindow(name$ as string,parent$ as string,label$ as string,x as integer,y as integer,width as integer,height as integer)
 	array insert at bottom SL_GUIWINDOW(0)
@@ -166,53 +200,68 @@ function SL_MakeWindow(name$ as string,parent$ as string,label$ as string,x as i
 	SL_GUIWINDOW(id).moveable = 1
 	SL_GUIWINDOW(id).maximizeable = 1
 	SL_GUIWINDOW(id).minimizeable = 1
-	SL_GUIWINDOW(id).label = SL_MakeLabel(label$)
 	
 	`create and position window
 	SL_GUIWINDOW(id).spr_topleft = SL_FindFreeSprite(1)
 	sprite SL_GUIWINDOW(id).spr_topleft,x,y,SL_GUIWINDOW(1).spr_topleft
 	
 	SL_GUIWINDOW(id).spr_topmid = SL_FindFreeSprite(1)
-	x = SL_GUIWINDOW(id).x + image width(SL_GUIWINDOW(1).spr_topleft)
+	x = SL_GUIWINDOW(id).x + 32
 	sprite SL_GUIWINDOW(id).spr_topmid,x,SL_GUIWINDOW(id).y,SL_GUIWINDOW(1).spr_topmid
-	xsize = width - image width(SL_GUIWINDOW(1).spr_topleft) - image width(SL_GUIWINDOW(1).spr_topright)
-	size sprite SL_GUIWINDOW(id).spr_topmid,xsize,sprite height(SL_GUIWINDOW(id).spr_topmid)
+	xsize = width - 32 - 32
+	size sprite SL_GUIWINDOW(id).spr_topmid,xsize,32
 	
 	SL_GUIWINDOW(id).spr_topright = SL_FindFreeSprite(1)
-	x = SL_GUIWINDOW(id).x + width - sprite width(SL_GUIWINDOW(id).spr_topleft)
+	x = SL_GUIWINDOW(id).x + width - 32
 	sprite SL_GUIWINDOW(id).spr_topright,x,SL_GUIWINDOW(id).y,SL_GUIWINDOW(1).spr_topright
 	
 	SL_GUIWINDOW(id).spr_rightmid = SL_FindFreeSprite(1)
-	y = SL_GUIWINDOW(id).y + sprite height(SL_GUIWINDOW(id).spr_topright)
+	y = SL_GUIWINDOW(id).y + 32
 	sprite SL_GUIWINDOW(id).spr_rightmid,x,y,SL_GUIWINDOW(1).spr_rightmid
-	xsize = image width(SL_GUIWINDOW(1).spr_rightmid)
-	ysize = height - image height(SL_GUIWINDOW(1).spr_topright) - image height(SL_GUIWINDOW(1).spr_lowright)
+	xsize = 32
+	ysize = height - 32 - 32
 	size sprite SL_GUIWINDOW(id).spr_rightmid,xsize,ysize
 	
 	SL_GUIWINDOW(id).spr_lowright = SL_FindFreeSprite(1)
-	y = SL_GUIWINDOW(id).y + height - image height(SL_GUIWINDOW(1).spr_topright)
+	y = SL_GUIWINDOW(id).y + height - 32
 	sprite SL_GUIWINDOW(id).spr_lowright,x,y,SL_GUIWINDOW(1).spr_lowright
 	
 	SL_GUIWINDOW(id).spr_lowmid = SL_FindFreeSprite(1)
-	x = SL_GUIWINDOW(id).x + image width(SL_GUIWINDOW(1).spr_lowleft)
-	xsize = width - image width(SL_GUIWINDOW(1).spr_lowleft) - image width(SL_GUIWINDOW(1).spr_lowright)
-	ysize = image height(SL_GUIWINDOW(1).spr_lowmid)
+	x = SL_GUIWINDOW(id).x + 32
+	xsize = width - 32 - 32
+	ysize = 32
 	sprite SL_GUIWINDOW(id).spr_lowmid,x,y,SL_GUIWINDOW(1).spr_lowmid
 	size sprite SL_GUIWINDOW(id).spr_lowmid,xsize,ysize
 	
 	SL_GUIWINDOW(id).spr_lowleft = SL_FindFreeSprite(1)
 	x = SL_GUIWINDOW(id).x
-	y = SL_GUIWINDOW(id).y + height - image height(SL_GUIWINDOW(1).spr_topleft)
+	y = SL_GUIWINDOW(id).y + height - 32
 	sprite SL_GUIWINDOW(id).spr_lowleft,x,y,SL_GUIWINDOW(1).spr_lowleft
 	
 	SL_GUIWINDOW(id).spr_leftmid = SL_FindFreeSprite(1)
-	y = SL_GUIWINDOW(id).y + image height(SL_GUIWINDOW(1).spr_topleft)
+	y = SL_GUIWINDOW(id).y + 32
 	sprite SL_GUIWINDOW(id).spr_leftmid,x,y,SL_GUIWINDOW(1).spr_leftmid
-	xsize = sprite width(SL_GUIWINDOW(id).spr_leftmid)
-	ysize = height - image height(SL_GUIWINDOW(1).spr_topleft) - image height(SL_GUIWINDOW(1).spr_lowleft)
+	xsize = 32
+	ysize = height - 32 - 32
 	size sprite SL_GUIWINDOW(id).spr_leftmid,xsize,ysize
+
+	SL_GUIWINDOW(id).spr_titleleft = SL_FindFreeSprite(1)
+	x = SL_GUIWINDOW(id).x + 4
+	y = SL_GUIWINDOW(id).y - 28
+	sprite SL_GUIWINDOW(id).spr_titleleft,x,y,SL_GUIWINDOW(1).spr_titleleft
 	
-	`TODO: Add title bar to window and caption/label. Make title bar resize with title text length.
+	SL_GUIWINDOW(id).spr_titlemid = SL_FindFreeSprite(1)
+	x = x + 32
+	xsize = width - 32 - 32 - 4 - 4
+	sprite SL_GUIWINDOW(id).spr_titlemid,x,y,SL_GUIWINDOW(1).spr_titlemid
+	size sprite SL_GUIWINDOW(id).spr_titlemid,xsize,32
+	
+	SL_GUIWINDOW(id).spr_titleright = SL_FindFreeSprite(1)
+	x = SL_GUIWINDOW(id).x + width - 32 - 4
+	sprite SL_GUIWINDOW(id).spr_titleright,x,y,SL_GUIWINDOW(1).spr_titleright
+
+	`make label/caption last so that it appears over the window and not under it.
+	SL_GUIWINDOW(id).label = SL_MakeLabel(Label$,SL_GUIWINDOW(id).x+19,SL_GUIWINDOW(id).y-14,15)
 endfunction
 
 
@@ -220,6 +269,8 @@ endfunction
 `=======================GUI RUNNING CODE========================================
 function SL_GUIRUN()
 	for run = 1 to array count(SL_GUIGADGET(0))
-	
+		if SL_GUIGADGET(run).gtype = SL_GUI_WINDOW
+			
+		endif
 	next run
 endfunction

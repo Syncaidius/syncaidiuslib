@@ -1,0 +1,137 @@
+`array to hold all tree items/ style sections
+Type Char
+	exist					as boolean `if 1 then the image exists (i.e. whatever loading the font can skip loading the char memblock if it doesnt).
+EndType
+Dim Char(255) as Char
+
+`globals-----
+global filepath$		as string
+global charlist$		as string = ""
+
+`menu globals
+global MainWin		
+global menu
+global filemenu
+global helpmenu
+global menumax			as integer
+
+`Char variables
+global textx			as integer = 0
+global texty 			as integer = 40
+global textpos 		as integer = 1
+global curchar$ 		as string = ""
+global ascii 			as integer = 0
+
+#constant MENU_FILE 1
+#constant MENU_CHOOSEFOLDER 2
+#constant MENU_EXPORT 3
+#constant MENU_EXIT 5
+#constant MENU_HELP 6
+
+
+`code---------
+set display mode 1024,768,32
+sync on : sync rate 0
+backdrop on : color backdrop 0
+Maximize Window
+StartBlue "MY","5120"
+D3D_Init
+D3D_FONT 1,"arial",12,1,0,8
+D3D_FONT 2,"arial",10,1,0,10
+
+Make_Menu()
+
+if File Exist("settings.txt")=1
+	Open to Read 1,"settings.txt"
+	Read String 1,filepath$
+	Close File 1
+endif
+
+charlist$ = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+charlist$ = charlist$ + "abcdefghijklmnopqrstuvwxyz"
+charlist$ = charlist$ + "0123456789"
+charlist$ = charlist$ + "!£$%^&*()_+€-="+chr$(34)
+charlist$ = charlist$ + "[]#';,./{}:@~<>?\|¦"
+
+nexttime = curtime+100
+do
+	getEvent
+	
+	Run_Menu()
+	d3d_StartText
+		for draw = 1 to len(charlist$)
+			curchar$ = MID$(charlist$,textpos)
+			ascii = asc(curchar$)
+			if file exist(filepath$+"\"+str$(ascii)+".png")=1
+				d3d_text 1,textx,texty,0,curchar$,d3d_rgba(0,255,0,255)
+			else
+				d3d_text 2,textx,texty,0,curchar$,d3d_rgba(255,0,0,255)
+			endif
+			textx = textx + 12
+			if textx>(screen width()-20)
+				textx = 0
+				texty = texty + 20
+			endif
+			textpos = textpos + 1
+		next draw
+		textx = 0
+		texty = 40
+		textpos = 0
+		d3d_text 1,0,0,0,"DIRECTORY: "+filepath$,d3d_rgba(0,255,255,255)
+	d3d_EndText
+	
+	sync
+loop
+
+function Make_Menu()
+	MainWin = CreateGadgetFromWindow(MainWindow())
+	SetGadgetText MainWin,"SL Font Maker"
+	
+	menu = CreateMenu(MainWin)
+	addMenuItem menu,"File",MENU_FILE
+		filemenu = CreateSubMenu(menu,MENU_FILE)
+		addMenuitem filemenu,"Choose Folder",MENU_CHOOSEFOLDER
+		addMenuitem filemenu,"Export",MENU_EXPORT
+		addMenuSplitter filemenu
+		addMenuItem filemenu,"Exit",MENU_EXIT
+	addMenuItem menu,"Help",MENU_EDIT
+		helpmenu = CreateSubMenu(menu,MENU_HELP)
+endfunction
+
+function Run_Menu()
+	if EventType() = MENU_CLICK
+		menuclicked = EventData()
+		
+		if menuclicked = MENU_CHOOSEFOLDER `select file path
+			filepath$ = folderDialog()
+			if File Exist("settings.txt")=1
+				Delete File "settings.txt"
+			endif
+			Open to Write 1,"settings.txt"
+			Write String 1,filepath$
+			Close File 1
+		endif
+		if menuclicked = MENU_EXPORT
+			ExportFont()
+		endif
+	endif
+endfunction
+
+function ExportFont()
+	filename$ = SaveDialog("Export SL Style","SL Fonts (*.slf)|*.slf")
+	if File Exist(filename$)=1 then Delete File filename$
+	
+	Open to write 1,filename$
+		for write = 1 to 255
+			if file exist(filepath$+"\"+str$(write)+".png") = 1
+				write long 1,write
+				load image filepath$+"\"+str$(write)+".png",1
+				make memblock from image 1,1
+				write memblock 1,1
+				delete memblock 1 : delete image 1
+			else
+				write long 1,-1
+			endif
+		next write
+	close file 1
+endfunction
