@@ -2,6 +2,14 @@
 `======================
 `©%Author%
 `======================
+
+global mx		as integer
+global my		as integer
+global mmx		as integer
+global mmy		as integer
+global mmz		as integer
+global mclick	as integer
+
 `Main Source File
 set display mode 1024,768,32
 backdrop on : color backdrop 0
@@ -15,19 +23,27 @@ SL_GUI_INIT()
 SL_Load_Style("test.sls")
 SL_LoadBMPFont("test.slf")
 
-SL_MakeWindow("Test","dbp","This is a test window",100,100,300,400)
-`SL_MakeWindow("Test2","Main","This is a test window2",200,100,300,100)
-`SL_MakeWindow("Test","Main","This is a test window",400,100,300,100)
-`SL_MakeWindow("Test","Main","This is a test window",500,100,700,200)
-`SL_MakeWindow("Test","Main","This is a test window",600,100,100,500)
-
 SL_MakeLabel("LETTERS: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",0,500,16)
 SL_MakeLabel("NUMBERS: 1234567890",0,520,16)
 SL_MakeLabel("SYMBOLS: !£$%^&*()_+=-€[];'#/.,\`¬<>?:@~}{¦",0,540,14)
+
+SL_MakeWindow("Test","dbp","This is a test window",100,100,300,400)
+SL_MakeWindow("Test2","dbp","Skills",200,100,300,100)
+SL_MakeWindow("Test4","dbp","Inventory",400,100,300,100)
+SL_MakeWindow("Test5","Main","Upgrades",500,100,700,200)
+SL_MakeWindow("Test14","Main","Map",600,100,100,500)
+
+
 do
-	SL_GUIRUN()
+	mx = MouseX()
+	my = MouseY()
+	mmx = mousemovex()
+	mmy = mousemovey()
+	mmz = mousemovez()
+	mclick = mouseClick()
+	SL_GUIRUN(mclick,mx,my,mmz)
 	
 	text 0,0,"FPS: "+STR$(SCREEN FPS())
-	text 0,20,"Mouse: "+STR$(Mousex())+","+STR$(MouseY())
+	text 0,20,"Mouse: "+STR$(mx)+","+STR$(my)
 	Sync
 loop
